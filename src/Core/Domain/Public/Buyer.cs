@@ -3,7 +3,7 @@ using Demo.WebApi.Domain.Common.Enums;
 
 namespace Demo.WebApi.Domain.Public;
 
-public class Buyer : AuditableEntity
+public class Buyer : AuditableEntity, IAggregateRoot
 {
     public string FirstName { get; set; }
     public string LastName { get; set; }

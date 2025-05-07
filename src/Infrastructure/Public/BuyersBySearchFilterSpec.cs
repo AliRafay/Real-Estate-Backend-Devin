@@ -1,3 +1,4 @@
+using Ardalis.Specification;
 using Demo.WebApi.Application.Buyers;
 using Demo.WebApi.Application.Common.Specification;
 using Demo.WebApi.Domain.Public;
@@ -11,7 +12,10 @@ public class BuyersBySearchFilterSpec : EntitiesByPaginationFilterSpec<Buyer>
     {
         if (!countOnly)
         {
-            Query.OrderByDescending(b => b.RegistrationDate, !filter.HasOrderBy());
+            if (filter.OrderBy?.Any() != true)
+            {
+                Query.OrderByDescending(b => b.RegistrationDate);
+            }
         }
 
         if (!string.IsNullOrEmpty(filter.FirstName))

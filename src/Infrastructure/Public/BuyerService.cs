@@ -1,33 +1,29 @@
+using Ardalis.Specification;
 using Demo.WebApi.Application.Buyers;
 using Demo.WebApi.Application.Common.Exceptions;
 using Demo.WebApi.Application.Common.Models;
-using Demo.WebApi.Application.Common.Specification;
+using Demo.WebApi.Application.Common.Persistence;
 using Demo.WebApi.Domain.Common.Enums;
 using Demo.WebApi.Domain.Public;
-using Demo.WebApi.Infrastructure.Common.Extensions;
-using Demo.WebApi.Infrastructure.Persistence.Context;
 using Mapster;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 
 namespace Demo.WebApi.Infrastructure.Public;
 
 public class BuyerService : IBuyerService
 {
-    private readonly ApplicationDbContext _dbContext;
+    private readonly IRepository<Buyer> _repository;
     private readonly IStringLocalizer _localizer;
 
-    public BuyerService(ApplicationDbContext dbContext, IStringLocalizer<BuyerService> localizer)
+    public BuyerService(IRepository<Buyer> repository, IStringLocalizer<BuyerService> localizer)
     {
-        _dbContext = dbContext;
+        _repository = repository;
         _localizer = localizer;
     }
 
-    public async Task<BuyerDto> GetAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<BuyerDto> GetAsync(int id, CancellationToken cancellationToken)
     {
-        var buyer = await _dbContext.Buyers
-            .AsNoTracking()
-            .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
+        var buyer = await _repository.GetByIdAsync(id, cancellationToken);
 
         if (buyer is null)
         {
@@ -41,75 +37,75 @@ public class BuyerService : IBuyerService
     {
         var spec = new BuyersBySearchFilterSpec(filter);
         
-        var buyers = await _dbContext.Buyers
-            .WithSpecification(spec)
-            .AsNoTracking()
-            .ProjectToType<BuyerDto>()
-            .ToListAsync(cancellationToken);
+        var buyers = await _repository.ListAsync(spec, cancellationToken);
+        var buyerDtos = buyers.Adapt<List<BuyerDto>>();
             
-        var count = await _dbContext.Buyers
-            .WithSpecification(new BuyersBySearchFilterSpec(filter, true))
-            .CountAsync(cancellationToken);
+        var count = await _repository.CountAsync(new BuyersBySearchFilterSpec(filter, true), cancellationToken);
             
-        return new PaginationResponse<BuyerDto>(buyers, count, filter.PageNumber, filter.PageSize);
+        return new PaginationResponse<BuyerDto>(buyerDtos, count, filter.PageNumber, filter.PageSize);
     }
 
-    public async Task<Guid> CreateAsync(CreateBuyerRequest request, CancellationToken cancellationToken)
+    public async Task<int> CreateAsync(CreateBuyerRequest request, CancellationToken cancellationToken)
     {
         var buyer = request.Adapt<Buyer>();
         
         buyer.Status = BuyerStatus.Active;
         buyer.RegistrationDate = DateTime.UtcNow;
         
-        if (await _dbContext.Buyers.AnyAsync(b => b.Email == request.Email, cancellationToken))
+        var existingBuyer = await _repository.FirstOrDefaultAsync(
+            new BuyerByEmailSpec(request.Email), 
+            cancellationToken);
+            
+        if (existingBuyer != null)
         {
             throw new ConflictException(_localizer["Buyer with this email already exists."]);
         }
         
-        await _dbContext.Buyers.AddAsync(buyer, cancellationToken);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await _repository.AddAsync(buyer, cancellationToken);
         
         return buyer.Id;
     }
 
-    public async Task<Guid> UpdateAsync(UpdateBuyerRequest request, CancellationToken cancellationToken)
+    public async Task<int> UpdateAsync(UpdateBuyerRequest request, CancellationToken cancellationToken)
     {
-        var buyer = await _dbContext.Buyers.FindAsync(new object[] { request.Id }, cancellationToken);
+        var buyer = await _repository.GetByIdAsync(request.Id, cancellationToken);
         
         if (buyer is null)
         {
             throw new NotFoundException(_localizer["Buyer Not Found."]);
         }
         
-        if (await _dbContext.Buyers.AnyAsync(b => b.Email == request.Email && b.Id != request.Id, cancellationToken))
+        var existingBuyer = await _repository.FirstOrDefaultAsync(
+            new BuyerByEmailSpec(request.Email), 
+            cancellationToken);
+            
+        if (existingBuyer != null && !existingBuyer.Id.Equals(request.Id))
         {
             throw new ConflictException(_localizer["Buyer with this email already exists."]);
         }
         
         request.Adapt(buyer);
         
-        _dbContext.Buyers.Update(buyer);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await _repository.UpdateAsync(buyer, cancellationToken);
         
         return buyer.Id;
     }
 
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken)
     {
-        var buyer = await _dbContext.Buyers.FindAsync(new object[] { id }, cancellationToken);
+        var buyer = await _repository.GetByIdAsync(id, cancellationToken);
         
         if (buyer is null)
         {
             throw new NotFoundException(_localizer["Buyer Not Found."]);
         }
         
-        _dbContext.Buyers.Remove(buyer);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await _repository.DeleteAsync(buyer, cancellationToken);
     }
 
     public async Task<string> ToggleBlockStatusAsync(ToggleBuyerStatusRequest request, CancellationToken cancellationToken)
     {
-        var buyer = await _dbContext.Buyers.FindAsync(new object[] { request.BuyerId }, cancellationToken);
+        var buyer = await _repository.GetByIdAsync(request.BuyerId, cancellationToken);
         
         if (buyer is null)
         {
@@ -119,13 +115,13 @@ public class BuyerService : IBuyerService
         if (request.Block)
         {
             buyer.Status = BuyerStatus.Blocked;
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _repository.UpdateAsync(buyer, cancellationToken);
             return _localizer["Buyer Blocked Successfully."];
         }
         else
         {
             buyer.Status = BuyerStatus.Active;
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _repository.UpdateAsync(buyer, cancellationToken);
             return _localizer["Buyer Unblocked Successfully."];
         }
     }

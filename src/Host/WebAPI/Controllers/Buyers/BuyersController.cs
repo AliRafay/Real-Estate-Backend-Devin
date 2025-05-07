@@ -22,10 +22,10 @@ public class BuyersController : VersionNeutralApiController
         return (await _buyerService.SearchAsync(filter, cancellationToken)).ToInformationResponse();
     }
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("{id:int}")]
     [MustHavePermission(AppAction.View, AppResource.Buyers)]
     [OpenApiOperation("Get a buyer's details.", "")]
-    public async Task<HttpResponseDto<BuyerDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<HttpResponseDto<BuyerDto>> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
         return (await _buyerService.GetAsync(id, cancellationToken)).ToInformationResponse();
     }
@@ -33,23 +33,25 @@ public class BuyersController : VersionNeutralApiController
     [HttpPost]
     [MustHavePermission(AppAction.Create, AppResource.Buyers)]
     [OpenApiOperation("Creates a new buyer.", "")]
-    public async Task<HttpResponseDto<Guid>> CreateAsync(CreateBuyerRequest request, CancellationToken cancellationToken)
+    public async Task<HttpResponseDto<string>> CreateAsync(CreateBuyerRequest request, CancellationToken cancellationToken)
     {
-        return (await _buyerService.CreateAsync(request, cancellationToken)).ToInformationResponse();
+        var id = await _buyerService.CreateAsync(request, cancellationToken);
+        return HttpResponseExtension.InformationResponse($"Buyer created successfully with ID: {id}");
     }
 
     [HttpPut]
     [MustHavePermission(AppAction.Update, AppResource.Buyers)]
     [OpenApiOperation("Updates a buyer.", "")]
-    public async Task<HttpResponseDto<Guid>> UpdateAsync(UpdateBuyerRequest request, CancellationToken cancellationToken)
+    public async Task<HttpResponseDto<string>> UpdateAsync(UpdateBuyerRequest request, CancellationToken cancellationToken)
     {
-        return (await _buyerService.UpdateAsync(request, cancellationToken)).ToInformationResponse();
+        var id = await _buyerService.UpdateAsync(request, cancellationToken);
+        return HttpResponseExtension.InformationResponse($"Buyer updated successfully with ID: {id}");
     }
 
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("{id:int}")]
     [MustHavePermission(AppAction.Delete, AppResource.Buyers)]
     [OpenApiOperation("Delete a buyer.", "")]
-    public async Task<HttpResponseDto<string>> DeleteAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<HttpResponseDto<string>> DeleteAsync(int id, CancellationToken cancellationToken)
     {
         await _buyerService.DeleteAsync(id, cancellationToken);
         return HttpResponseExtension.InformationResponse("Buyer Deleted Successfully.");
