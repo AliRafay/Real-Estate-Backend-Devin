@@ -1,0 +1,8 @@
+{
+  "StripeSettings": {
+    "ApiKey": null,
+    "PlatformAccountId": null,
+    "AccountWebhookSigningSecret": null,
+    "ConnectWebhookSigningSecret": null
+  }
+}

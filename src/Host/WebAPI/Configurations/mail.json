@@ -1,0 +1,11 @@
+{
+  "MailSettings": {
+    "DisplayName": "Koderlabs Boilerplate",
+    "From": "nabeelhussain2700@gmail.com",
+    "Host": "smtp.ethereal.email",
+    "Password": "AdEqEKB4QwWX9Xey82",
+    "Port": 587,
+    "UserName": "nestor91@ethereal.email",
+    "SendGridApiKey": "SG.BlDwpAg8S6e8jkRePo8eZw.QcRjbHK1WDeS6JJwJWKPeKS75SXQxzHGXwIY6uUPH1A"
+  }
+}
