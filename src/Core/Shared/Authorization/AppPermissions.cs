@@ -23,6 +23,7 @@ public static class AppResource
     public const string UserRoles = nameof(UserRoles);
     public const string Roles = nameof(Roles);
     public const string RoleClaims = nameof(RoleClaims);
+    public const string Buyers = nameof(Buyers);
 }
 
 public static class AppPermissions
@@ -45,6 +46,11 @@ public static class AppPermissions
         new("Delete Roles", AppAction.Delete, AppResource.Roles),
         new("View RoleClaims", AppAction.View, AppResource.RoleClaims),
         new("Update RoleClaims", AppAction.Update, AppResource.RoleClaims),
+        new("View Buyers", AppAction.View, AppResource.Buyers),
+        new("Search Buyers", AppAction.Search, AppResource.Buyers),
+        new("Create Buyers", AppAction.Create, AppResource.Buyers),
+        new("Update Buyers", AppAction.Update, AppResource.Buyers),
+        new("Delete Buyers", AppAction.Delete, AppResource.Buyers),
     };
 
     public static IReadOnlyList<AppPermission> Admin { get; } = new ReadOnlyCollection<AppPermission>(_all);

@@ -11,6 +11,7 @@ using Demo.WebApi.Infrastructure.Middleware;
 using Demo.WebApi.Infrastructure.OpenApi;
 using Demo.WebApi.Infrastructure.Persistence;
 using Demo.WebApi.Infrastructure.Persistence.Initialization;
+using Demo.WebApi.Infrastructure.Public;
 using Demo.WebApi.Infrastructure.SecurityHeaders;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
@@ -43,6 +44,7 @@ public static class Startup
             .AddRequestLogging(config)
             .AddRouting(options => options.LowercaseUrls = true)
             .AddServices()
+            .AddPublicInfrastructure()
             .AddAzureQueues();
     }
 

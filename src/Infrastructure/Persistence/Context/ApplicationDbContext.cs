@@ -22,6 +22,8 @@ public class ApplicationDbContext : BaseDbContext
     public DbSet<NotificationTemplate> NotificationTemplates => Set<NotificationTemplate>();
 
     public DbSet<Document> Documents => Set<Document>();
+    
+    public DbSet<Buyer> Buyers => Set<Buyer>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
