@@ -16,6 +16,10 @@
       <Folder Include="Migrations\Application\" />
     </ItemGroup>
     <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        <PrivateAssets>all</PrivateAssets>
+      </PackageReference>
       <PackageReference Include="NSwag.CodeGeneration.TypeScript" Version="14.0.8" />
     </ItemGroup>
 </Project>
