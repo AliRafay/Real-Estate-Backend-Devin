@@ -1,0 +1,7 @@
+{
+  "LinkSettings": {
+    "SetPassowrdPath": "/auth/set-password",
+    "StripeReturnPath": "/stripe/success",
+    "StripeRedirectPath": "/stripe"
+  }
+}
